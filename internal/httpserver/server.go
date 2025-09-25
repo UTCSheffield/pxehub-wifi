@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"gorm.io/gorm"
 )
 
 type HttpServer struct {
-	Iface  string
-	Port   uint16
-	Server *http.Server
+	Iface    string
+	Port     uint16
+	Server   *http.Server
+	Database *gorm.DB
 }
 
 func getInterfaceIP(name string) (string, error) {
@@ -66,6 +68,8 @@ func (h *HttpServer) Start() error {
 	log.Printf("Starting http on iface %s listening on %s", h.Iface, addr)
 
 	router := httprouter.New()
+
+	router.GET("/boot/:mac", h.BootScript)
 
 	h.Server = &http.Server{
 		Addr:    addr,
