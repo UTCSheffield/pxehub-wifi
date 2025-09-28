@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"pxehub/internal/database"
+	"pxehub/internal/db"
 	"pxehub/internal/dnsmasq"
 	"pxehub/internal/httpserver"
 )
@@ -15,7 +15,7 @@ import (
 func main() {
 	//TODO: config file / command line args
 
-	db := database.OpenDB("/opt/pxehub/pxehub.db")
+	database := db.OpenDB("/opt/pxehub/pxehub.db")
 
 	dhcpTftpServer := dnsmasq.DnsmasqServer{
 		Iface:       "virbr1",
@@ -29,7 +29,7 @@ func main() {
 	httpServer := httpserver.HttpServer{
 		Iface:    "virbr1",
 		Port:     80,
-		Database: db,
+		Database: database,
 	}
 
 	if err := dhcpTftpServer.Start(); err != nil {

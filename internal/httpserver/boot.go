@@ -1,32 +1,21 @@
 package httpserver
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-
-	"pxehub/internal/database"
+	"pxehub/internal/db"
 
 	"github.com/julienschmidt/httprouter"
-	"gorm.io/gorm"
 )
 
 func (h *HttpServer) BootScript(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	mac := ps.ByName("mac")
 
-	ctx := context.Background()
-
-	host, err := gorm.G[database.Host](h.Database).Where("mac = ?", mac).First(ctx)
+	script, err := db.GetScriptByMAC(mac, h.Database)
 	if err != nil {
-		fmt.Fprintln(w, "Error")
+		fmt.Fprint(w, "Error")
 		return
 	}
 
-	script, err := gorm.G[database.Script](h.Database).Where("ID = ?", host.ScriptID).First(ctx)
-	if err != nil {
-		fmt.Fprintln(w, "Error")
-		return
-	}
-
-	fmt.Fprint(w, script.Content)
+	fmt.Fprint(w, script)
 }

@@ -58,12 +58,12 @@ func (h *HttpServer) Start() error {
 		return fmt.Errorf("port not set")
 	}
 
-	ip, err := getInterfaceIP(h.Iface)
-	if err != nil {
-		return err
-	}
+	//ip, err := getInterfaceIP(h.Iface)
+	//if err != nil {
+	//	return err
+	//}
 
-	addr := fmt.Sprintf("%s:%d", ip, h.Port)
+	addr := fmt.Sprintf(":%d", h.Port)
 
 	log.Printf("Starting http on iface %s listening on %s", h.Iface, addr)
 
