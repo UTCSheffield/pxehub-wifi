@@ -67,7 +67,7 @@ func (d *DnsmasqServer) prepareTFTP() error {
 
 	script := `#!ipxe
 dhcp
-chain --autofree http://${next-server}/boot/${net0/mac} || read test
+chain --autofree http://${next-server}/api/boot/${net0/mac}
 	`
 
 	scriptPath := filepath.Join(d.TFTPDir, "autoexec.ipxe")

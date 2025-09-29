@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -41,8 +42,14 @@ func getInterfaceIP(name string) (string, error) {
 
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var method string
+		if strings.Contains(r.URL.Path, "/api/new/") {
+			method = "POST"
+		} else {
+			method = r.Method
+		}
 		log.Printf("%s %s from %s",
-			r.Method,
+			method,
 			r.URL.Path,
 			r.RemoteAddr,
 		)
@@ -58,18 +65,20 @@ func (h *HttpServer) Start() error {
 		return fmt.Errorf("port not set")
 	}
 
-	//ip, err := getInterfaceIP(h.Iface)
-	//if err != nil {
-	//	return err
-	//}
+	ip, err := getInterfaceIP(h.Iface)
+	if err != nil {
+		return err
+	}
 
-	addr := fmt.Sprintf(":%d", h.Port)
+	addr := fmt.Sprintf("%s:%d", ip, h.Port)
 
 	log.Printf("Starting http on iface %s listening on %s", h.Iface, addr)
 
 	router := httprouter.New()
 
-	router.GET("/boot/:mac", h.BootScript)
+	router.GET("/api/boot/:mac", h.BootScript)
+	router.GET("/api/new/host/:mac/:hostname", h.NewHost)
+	router.POST("/api/new/host/:mac/:hostname", h.NewHost)
 
 	h.Server = &http.Server{
 		Addr:    addr,
