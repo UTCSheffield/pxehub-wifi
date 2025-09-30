@@ -11,7 +11,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-var script = `#!ipxe
+var postRegisterScript = `#!ipxe
 #suc chain --autofree http://${next-server}/api/boot/${net0/mac}
 #err echo "Host registering failed"
 #err read end
@@ -24,7 +24,7 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 	if !macRegex.MatchString(mac) {
 		switch r.Method {
 		case "GET":
-			script := strings.ReplaceAll(script, "#err ", "")
+			script := strings.ReplaceAll(postRegisterScript, "#err ", "")
 			fmt.Fprint(w, script)
 		case "POST":
 			fmt.Fprint(w, "Invalid MAC Address")
@@ -38,7 +38,7 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 	if err != nil {
 		switch r.Method {
 		case "GET":
-			script := strings.ReplaceAll(script, "#err ", "")
+			script := strings.ReplaceAll(postRegisterScript, "#err ", "")
 			fmt.Fprint(w, script)
 		case "POST":
 			fmt.Fprint(w, "Error")
@@ -49,7 +49,7 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 
 	switch r.Method {
 	case "GET":
-		script := strings.ReplaceAll(script, "#suc ", "")
+		script := strings.ReplaceAll(postRegisterScript, "#suc ", "")
 		fmt.Fprint(w, script)
 	case "POST":
 		fmt.Fprint(w, "Success")

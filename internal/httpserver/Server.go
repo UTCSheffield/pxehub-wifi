@@ -80,6 +80,10 @@ func (h *HttpServer) Start() error {
 	router.GET("/api/new/host/:mac/:hostname", h.NewHost)
 	router.POST("/api/new/host/:mac/:hostname", h.NewHost)
 
+	router.GET("/", h.UI)
+	router.GET("/hosts", h.UI)
+	router.GET("/tasks", h.UI)
+
 	h.Server = &http.Server{
 		Addr:    addr,
 		Handler: loggingMiddleware(router),

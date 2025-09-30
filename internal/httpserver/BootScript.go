@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,7 +8,6 @@ import (
 	"regexp"
 
 	"github.com/julienschmidt/httprouter"
-	"gorm.io/gorm"
 )
 
 func (h *HttpServer) BootScript(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -21,10 +19,8 @@ func (h *HttpServer) BootScript(w http.ResponseWriter, r *http.Request, ps httpr
 		return
 	}
 
-	script, err := db.GetScriptByMAC(mac, h.Database)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		fmt.Fprint(w, "test")
-	} else if err != nil {
+	script, err := db.GetScriptByMAC(mac, h.Database, true)
+	if err != nil {
 		fmt.Fprint(w, "Error")
 		log.Print("Error in http request", err)
 		return

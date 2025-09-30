@@ -1,0 +1,130 @@
+{{ define "content" }}
+<div class="row row-deck row-cards">
+    <div class="col-4">
+        <div class="card">
+            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
+                <span class="status status-red" style="width: 82%">
+                    <span class="status-dot"></span>
+                    Requests from Unregistered Hosts
+                </span>
+                <h1 data-countup>{{ .UnregisteredRequests }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-4">
+        <div class="card">
+            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
+                <span class="status status-green" style="width: 78%">
+                    <span class="status-dot"></span>
+                    Requests from Registered Hosts
+                </span>
+                <h1 data-countup>{{ .RegisteredRequests }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-4">
+        <div class="card">
+            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
+                <span class="status status-blue" style="width: 73%">
+                    <span class="status-dot"></span>
+                    Total Requests from All Hosts
+                </span>
+                <h1 data-countup>{{ .TotalRequests }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body" style="height: 35rem">
+                <h2>Request Summary for {{ .Month }}</h2>
+                <div id="chart"></div>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    window.ApexCharts && (new ApexCharts(document.getElementById(
+                    'chart'), {
+                    chart: {
+                        type: "line",
+                        fontFamily: 'inherit',
+                        height: 500,
+                        parentHeightOffset: 0,
+                        toolbar: {
+                            show: false,
+                        },
+                        animations: {
+                            enabled: false
+                        },
+                    },
+                    stroke: {
+                        width: 2,
+                        lineCap: "round",
+                        curve: "straight",
+                    },
+                    series: [{
+                        name: "Unregistered Hosts",
+                        data: {{ .UnregisteredGraphData }}
+                    }, {
+                        name: "Registered Hosts",
+                        data: {{ .RegisteredGraphData }}
+                    }, {
+                        name: "All Hosts",
+                        data: {{ .GraphData }}
+                    }],
+                    tooltip: {
+                        theme: 'dark'
+                    },
+                    grid: {
+                        padding: {
+                        top: -20,
+                        right: 0,
+                        left: -4,
+                        bottom: -4
+                        },
+                        strokeDashArray: 4,
+                    },
+                    xaxis: {
+                        labels: {
+                        padding: 0,
+                        },
+                        tooltip: {
+                        enabled: false
+                        },
+                        type: 'datetime',
+                    },
+                    yaxis: {
+                        labels: {
+                        padding: 4
+                        },
+                    },
+                    labels: {{ .GraphDates }},
+                    colors: [
+                        '#fadb14',
+                        '#52c41a',
+                        '#1890ff'
+                    ],
+                    legend: {
+                        show: true,
+                        position: 'bottom',
+                        offsetY: 12,
+                        markers: {
+                        width: 10,
+                        height: 10,
+                        radius: 100,
+                        },
+                        itemMargin: {
+                        horizontal: 8,
+                        vertical: 8
+                        },
+                    },
+                    })).render();
+                });
+            </script>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://unpkg.com/countup.js@2.9.0/dist/countUp.umd.js"></script>
+{{ end }}
