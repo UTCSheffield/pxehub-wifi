@@ -4,8 +4,8 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"path/filepath"
 	"pxehub/internal/db"
+	"pxehub/ui"
 	"strings"
 	"time"
 
@@ -21,13 +21,12 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 	switch path {
 	case "":
-		pageFile := "index.html"
 		files := []string{
-			filepath.Join("ui", "base.html"),
-			filepath.Join("ui", pageFile),
+			"base.html",
+			"index.html",
 		}
 
-		tmpl, err := template.ParseFiles(files...)
+		tmpl, err := template.ParseFS(ui.Content, files...)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.NotFound(w, r)
@@ -67,13 +66,12 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		}
 
 	case "hosts":
-		pageFile := "hosts.html"
 		files := []string{
-			filepath.Join("ui", "base.html"),
-			filepath.Join("ui", pageFile),
+			"base.html",
+			"hosts.html",
 		}
 
-		tmpl, err := template.ParseFiles(files...)
+		tmpl, err := template.ParseFS(ui.Content, files...)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.NotFound(w, r)
@@ -95,13 +93,12 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		}
 
 	case "tasks":
-		pageFile := "tasks.html"
 		files := []string{
-			filepath.Join("ui", "base.html"),
-			filepath.Join("ui", pageFile),
+			"base.html",
+			"tasks.html",
 		}
 
-		tmpl, err := template.ParseFiles(files...)
+		tmpl, err := template.ParseFS(ui.Content, files...)
 		if err != nil {
 			if os.IsNotExist(err) {
 				http.NotFound(w, r)
