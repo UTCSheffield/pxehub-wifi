@@ -107,7 +107,7 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-	case "tasks":
+	case "tasks", "tasks/new":
 		files := []string{
 			"base.html",
 			"tasks.html",
@@ -130,10 +130,10 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 		caser := cases.Title(language.English)
 		data := map[string]any{
-			"Title":    caser.String("tasks"),
-			"Username": "tasks",
-			"Path":     r.URL.Path,
-			"Tasks":    tasksHtml,
+			"Title": caser.String("tasks"),
+			"Name":  "User",
+			"Path":  r.URL.Path,
+			"Tasks": tasksHtml,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {

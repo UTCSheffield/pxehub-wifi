@@ -82,7 +82,10 @@ func (h *HttpServer) Start() error {
 
 	router.GET("/", h.UI)
 	router.GET("/hosts", h.UI)
+	router.GET("/hosts/edit/:id", h.UI)
 	router.GET("/tasks", h.UI)
+	router.GET("/tasks/new", h.UI)
+	router.GET("/tasks/edit/:id", h.UI)
 
 	h.Server = &http.Server{
 		Addr:    addr,
