@@ -1,0 +1,46 @@
+{{ define "content" }}
+<div class="row row-deck row-cards">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body flex-column m-5" style="height:45rem; overflow-y:auto;">
+                <div class="mb-3">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" 
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" 
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <circle cx="10" cy="10" r="7" />
+                                <line x1="21" y1="21" x2="15" y2="15" />
+                            </svg>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Search by Name..." id="tableSearch">
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height:38rem; overflow-y:auto;">
+                    <table class="table table-vcenter" id="tasksTable">
+                        <thead style="position:sticky; top:0; background:white; z-index:1;">
+                        <tr>
+                            <th>Name</th>
+                            <th>Created At</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {{ .Tasks }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById("tableSearch").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    document.querySelectorAll("#tasksTable tbody tr").forEach(row => {
+        let task = row.cells[0].innerText.toLowerCase();
+        row.style.display = (task.includes(value)) ? "" : "none";
+    });
+});
+</script>
+{{ end }}

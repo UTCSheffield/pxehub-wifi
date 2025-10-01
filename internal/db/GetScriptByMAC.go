@@ -13,13 +13,10 @@ var unregisteredScript = `#!ipxe
 
 menu Boot Menu - Unregistered ({mac})
 item --gap -- -------------------------------
-item local      Boot from local disk
+item exit       Exit iPXE
 item register   Register Device
-item netbootxyz Boot to netboot.xyz menu
+item netbootxyz netboot.xyz
 choose target && goto ${target}
-
-:local
-exit
 
 :register
 echo -n Hostname:
@@ -28,19 +25,19 @@ chain --autofree http://${next-server}/api/new/host/${net0/mac}/${hostname}
 
 :netbootxyz
 chain --autofree http://boot.netboot.xyz/
+
+:exit
+exit
 `
 
 var registeredScript = `#!ipxe
 
 menu Boot Menu - Registered as {hostname}
 item --gap -- -------------------------------
-item local      Boot from local disk
-item netbootxyz Boot to netboot.xyz menu
+item exit       Exit iPXE
+item netbootxyz netboot.xyz
 choose --default local --timeout 3000 target || goto local
 goto ${target}
-
-:local
-exit
 
 :register
 read hostname
@@ -48,6 +45,9 @@ chain --autofree http://${next-server}/api/new-host/${net0/mac}/${hostname}
 
 :netbootxyz
 chain --autofree http://boot.netboot.xyz/
+
+:exit
+exit
 `
 
 func GetScriptByMAC(mac string, db *gorm.DB, log bool) (string, error) {
@@ -62,8 +62,7 @@ func GetScriptByMAC(mac string, db *gorm.DB, log bool) (string, error) {
 		return script, nil
 	} else if err != nil {
 		return "", err
-	}
-	if log {
+	} else if log {
 		LogRequest(true, time.Now(), mac, db)
 	}
 

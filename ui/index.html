@@ -2,36 +2,36 @@
 <div class="row row-deck row-cards">
     <div class="col-4">
         <div class="card">
-            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
-                <span class="status status-red" style="width: 82%">
+            <div class="card-body flex-column m-5" style="height: 5rem">
+                <span class="status status-green">
                     <span class="status-dot"></span>
-                    Requests from Unregistered Hosts
+                    Registered Hosts
                 </span>
-                <h1 data-countup>{{ .UnregisteredRequests }}</h1>
+                <h1>{{ .TotalHosts }}</h1>
             </div>
         </div>
     </div>
 
     <div class="col-4">
         <div class="card">
-            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
-                <span class="status status-green" style="width: 78%">
+            <div class="card-body flex-column m-5" style="height: 5rem">
+                <span class="status status-yellow">
                     <span class="status-dot"></span>
-                    Requests from Registered Hosts
+                    Active Tasks
                 </span>
-                <h1 data-countup>{{ .RegisteredRequests }}</h1>
+                <h1>{{ .ActiveTasks }}</h1>
             </div>
         </div>
     </div>
 
     <div class="col-4">
         <div class="card">
-            <div class="card-body d-flex flex-column m-5" style="height: 5rem">
-                <span class="status status-blue" style="width: 73%">
+            <div class="card-body flex-column m-5" style="height: 5rem">
+                <span class="status status-blue">
                     <span class="status-dot"></span>
-                    Total Requests from All Hosts
+                    Total Requests
                 </span>
-                <h1 data-countup>{{ .TotalRequests }}</h1>
+                <h1>{{ .TotalRequests }}</h1>
             </div>
         </div>
     </div>
@@ -65,13 +65,10 @@
                     },
                     series: [{
                         name: "Unregistered Hosts",
-                        data: {{ .UnregisteredGraphData }}
+                        data: {{ .UnregisteredGraphData }},
                     }, {
                         name: "Registered Hosts",
-                        data: {{ .RegisteredGraphData }}
-                    }, {
-                        name: "All Hosts",
-                        data: {{ .GraphData }}
+                        data: {{ .RegisteredGraphData }},
                     }],
                     tooltip: {
                         theme: 'dark'
@@ -126,5 +123,4 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://unpkg.com/countup.js@2.9.0/dist/countUp.umd.js"></script>
 {{ end }}

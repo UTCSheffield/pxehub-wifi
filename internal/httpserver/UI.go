@@ -36,29 +36,38 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			return
 		}
 
-		graphData, graphData1, graphData2, graphDates, err := db.GetRequestGraphData(time.Now(), h.Database)
+		graphData1, graphData2, graphDates, err := db.GetRequestGraphData(time.Now(), h.Database)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		totalRequests, totalUnregisteredRequests, totalRegisteredRequests, err := db.GetTotalRequestCounts(h.Database)
+		totalRequests, err := db.GetTotalRequestCount(h.Database)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		totalHosts, err := db.GetTotalHostCount(h.Database)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		activeTasks, err := db.GetActiveTaskCount(h.Database)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		caser := cases.Title(language.English)
 		data := map[string]any{
-			"Title":                 caser.String("index"),
-			"Username":              "index",
+			"Title":                 caser.String("Home"),
+			"Name":                  "User",
 			"Path":                  r.URL.Path,
-			"GraphData":             graphData,
-			"UnregisteredGraphData": graphData1,
-			"RegisteredGraphData":   graphData2,
+			"RegisteredGraphData":   graphData1,
+			"UnregisteredGraphData": graphData2,
 			"GraphDates":            graphDates,
 			"Month":                 time.Now().Month(),
-			"UnregisteredRequests":  totalUnregisteredRequests,
-			"RegisteredRequests":    totalRegisteredRequests,
 			"TotalRequests":         totalRequests,
+			"TotalHosts":            totalHosts,
+			"ActiveTasks":           activeTasks,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
@@ -81,11 +90,17 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			return
 		}
 
+		hostsHtml, err := db.GetHostsAsHTML(h.Database)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		caser := cases.Title(language.English)
 		data := map[string]any{
-			"Title":    caser.String("hosts"),
-			"Username": "hosts",
-			"Path":     r.URL.Path,
+			"Title": caser.String("hosts"),
+			"Name":  "User",
+			"Path":  r.URL.Path,
+			"Hosts": template.HTML(hostsHtml),
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
@@ -108,11 +123,17 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			return
 		}
 
+		tasksHtml, err := db.GetTasksAsHTML(h.Database)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		caser := cases.Title(language.English)
 		data := map[string]any{
 			"Title":    caser.String("tasks"),
 			"Username": "tasks",
 			"Path":     r.URL.Path,
+			"Tasks":    tasksHtml,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
