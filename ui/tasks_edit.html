@@ -1,0 +1,18 @@
+{{ define "content" }}
+<div class="d-flex flex-column">
+  <h3>Edit Task</h3>
+  <form action="/api/edit/task/{{ .Task.ID }}" method="POST" class="d-flex flex-column flex-grow-1">
+    <input type="hidden" name="redirect" value="true">
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-control" name="taskName" value="{{ .Task.Name }}" required>
+      <label class="form-label">Script</label>
+      <textarea class="form-control" name="taskScript" rows="10" required>{{ .Task.Script }}</textarea>
+    </div>
+    <div class="modal-footer">
+      <a href="/tasks" class="btn btn-link link-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary ms-auto">Save changes</button>
+    </div>
+  </form>
+</div>
+{{ end }}

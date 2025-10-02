@@ -12,8 +12,8 @@ type Host struct {
 	gorm.Model
 	Name   string
 	Mac    string
-	TaskID *int
-	Task   *Task
+	TaskID int
+	Task   Task
 }
 
 func CreateHost(mac, hostname string, db *gorm.DB) error {
@@ -30,4 +30,26 @@ func CreateHost(mac, hostname string, db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func EditHost(name, mac string, taskID, id int, db *gorm.DB) error {
+	ctx := context.Background()
+
+	_, err := gorm.G[Host](db).Where("id = ?", id).Updates(ctx, Host{Name: name, Mac: mac, TaskID: taskID})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetHostByID(id string, db *gorm.DB) (*Host, error) {
+	ctx := context.Background()
+
+	host, err := gorm.G[Host](db).Where("id = ?", id).Preload("Task", nil).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &host, nil
 }

@@ -43,19 +43,13 @@ func downloadFile(url, dest string) error {
 }
 
 func (d *DnsmasqServer) prepareTFTP() error {
-	dir, err := os.MkdirTemp("", "dnsmasq-tftp-*")
-	if err != nil {
-		return fmt.Errorf("failed to create temp TFTP dir: %w", err)
-	}
-	d.TFTPDir = dir
-
 	binaries := map[string]string{
 		"ipxe.pxe": "https://boot.ipxe.org/ipxe.pxe",
 		"ipxe.efi": "https://boot.ipxe.org/ipxe.efi",
 	}
 
 	for name, url := range binaries {
-		dest := filepath.Join(dir, name)
+		dest := filepath.Join(d.TFTPDir, name)
 		log.Printf("Downloading %s...", name)
 		if err := downloadFile(url, dest); err != nil {
 			return fmt.Errorf("failed to download %s: %w", name, err)

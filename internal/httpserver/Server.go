@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -14,30 +13,10 @@ import (
 )
 
 type HttpServer struct {
-	Iface    string
-	Port     uint16
-	Server   *http.Server
-	Database *gorm.DB
-}
-
-func getInterfaceIP(name string) (string, error) {
-	iface, err := net.InterfaceByName(name)
-	if err != nil {
-		return "", err
-	}
-	addrs, err := iface.Addrs()
-	if err != nil {
-		return "", err
-	}
-	for _, addr := range addrs {
-		switch v := addr.(type) {
-		case *net.IPNet:
-			if v.IP.To4() != nil {
-				return v.IP.String(), nil
-			}
-		}
-	}
-	return "", fmt.Errorf("no IPv4 address found for interface %s", name)
+	Address   string
+	Server    *http.Server
+	Database  *gorm.DB
+	ExtrasDir string
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -58,27 +37,17 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func (h *HttpServer) Start() error {
-	if h.Iface == "" {
-		return fmt.Errorf("interface name not set")
-	}
-	if h.Port <= 0 {
-		return fmt.Errorf("port not set")
-	}
 
-	ip, err := getInterfaceIP(h.Iface)
-	if err != nil {
-		return err
-	}
-
-	addr := fmt.Sprintf("%s:%d", ip, h.Port)
-
-	log.Printf("Starting http on iface %s listening on %s", h.Iface, addr)
+	log.Printf("Starting http listening on %s", h.Address)
 
 	router := httprouter.New()
 
 	router.GET("/api/boot/:mac", h.BootScript)
 	router.GET("/api/new/host/:mac/:hostname", h.NewHost)
-	router.POST("/api/new/host/:mac/:hostname", h.NewHost)
+	router.POST("/api/new/host", h.NewHost)
+	router.POST("/api/edit/host/:id", h.EditHost)
+	router.POST("/api/new/task", h.NewTask)
+	router.POST("/api/edit/task/:id", h.EditTask)
 
 	router.GET("/", h.UI)
 	router.GET("/hosts", h.UI)
@@ -87,8 +56,10 @@ func (h *HttpServer) Start() error {
 	router.GET("/tasks/new", h.UI)
 	router.GET("/tasks/edit/:id", h.UI)
 
+	router.ServeFiles("/extras/*filepath", http.Dir(h.ExtrasDir))
+
 	h.Server = &http.Server{
-		Addr:    addr,
+		Addr:    h.Address,
 		Handler: loggingMiddleware(router),
 	}
 

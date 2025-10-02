@@ -1,0 +1,113 @@
+{{ define "content" }}
+<div class="d-flex flex-column">
+  <h3>Edit Host</h3>
+  <form action="/api/edit/host/{{ .Host.ID }}" method="POST" class="d-flex flex-column flex-grow-1 position-relative">
+    <input type="hidden" name="redirect" value="true">
+
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-control" name="hostName" value="{{ .Host.Name }}" required>
+
+      <label class="form-label mt-3">MAC Address</label>
+      <input type="text" class="form-control" name="hostMac" value="{{ .Host.Mac }}" required>
+
+      <label class="form-label mt-3">Assigned Task</label>
+      <div class="dropdown w-100">
+        <input 
+          type="text" 
+          id="taskSearch" 
+          class="form-control" 
+          placeholder="Search tasks..." 
+          value="{{ if .Host.Task }}{{ .Host.Task.Name }}{{ end }}">
+        <input type="hidden" name="taskID" id="taskID" value="{{ if .Host.TaskID }}{{ .Host.TaskID }}{{ end }}">
+
+        <div id="taskResults" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto;"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary ms-auto">Save changes</button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const input = document.getElementById("taskSearch");
+  const hidden = document.getElementById("taskID");
+  const results = document.getElementById("taskResults");
+
+  let tasks = [
+    {{ range .Tasks }}
+    { id: {{ .ID }}, name: "{{ .Name }}" },
+    {{ end }}
+  ];
+
+  let currentTask = null;
+  {{ if .Host.Task }}
+  currentTask = { id: {{ .Host.Task.ID }}, name: "{{ .Host.Task.Name }}" };
+  {{ end }}
+
+  function showMatches(matches) {
+    results.innerHTML = "";
+
+    if (currentTask && !matches.find(t => t.id === currentTask.id)) {
+      matches = [currentTask, ...matches];
+    }
+
+    matches = matches.filter(t => t.name && t.name.trim() !== "");
+
+    matches.slice(0, 20).forEach(t => {
+      const item = document.createElement("a");
+      item.href = "#";
+      item.className = "dropdown-item";
+      item.textContent = t.name;
+
+      if (hidden.value && t.id == hidden.value) {
+        item.classList.add("active");
+      }
+
+      item.onclick = (e) => {
+        e.preventDefault();
+        input.value = t.name;
+        hidden.value = t.id;
+        results.classList.remove("show");
+      };
+      results.appendChild(item);
+    });
+
+    if (matches.length) {
+      results.classList.add("show");
+    } else {
+      results.classList.remove("show");
+    }
+  }
+
+  input.addEventListener("input", function() {
+    const query = input.value.toLowerCase();
+    if (query.length === 0) {
+      showMatches(tasks);
+      return;
+    }
+    let matches = tasks.filter(t => t.name.toLowerCase().includes(query));
+    showMatches(matches);
+  });
+
+  input.addEventListener("focus", function() {
+    showMatches(tasks);
+  });
+
+  document.addEventListener("click", function(e) {
+    if (!results.contains(e.target) && e.target !== input) {
+      results.classList.remove("show");
+    }
+  });
+
+  if (currentTask) {
+    input.value = currentTask.name;
+    hidden.value = currentTask.id;
+  }
+});
+</script>
+{{ end }}

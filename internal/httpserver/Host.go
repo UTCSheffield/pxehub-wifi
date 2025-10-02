@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"pxehub/internal/db"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
@@ -53,5 +54,46 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 		fmt.Fprint(w, script)
 	case "POST":
 		fmt.Fprint(w, "Success")
+	}
+}
+
+func (h *HttpServer) EditHost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := ps.ByName("id")
+
+	var idPtr int
+	if id != "" {
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			http.Error(w, "Invalid taskID", http.StatusBadRequest)
+			return
+		}
+		idPtr = idInt
+	}
+
+	name := r.FormValue("hostName")
+	mac := r.FormValue("taskMac")
+	taskID := r.FormValue("taskID")
+	redirect := r.FormValue("redirect") == "true"
+
+	var taskIDPtr int
+	if taskID != "" {
+		idInt, err := strconv.Atoi(taskID)
+		if err != nil {
+			http.Error(w, "Invalid taskID", http.StatusBadRequest)
+			return
+		}
+		taskIDPtr = idInt
+	}
+
+	if err := db.EditHost(name, mac, taskIDPtr, idPtr, h.Database); err != nil {
+		http.Error(w, "Update failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if redirect {
+		http.Redirect(w, r, "/hosts", http.StatusSeeOther)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"ok"}`))
 	}
 }

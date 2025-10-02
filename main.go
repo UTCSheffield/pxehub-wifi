@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"pxehub/internal/db"
@@ -12,24 +14,82 @@ import (
 	"pxehub/internal/httpserver"
 )
 
+func readConf(path string) (map[string]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	conf := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		conf[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+	}
+
+	return conf, scanner.Err()
+}
+
 func main() {
-	//TODO: config file / command line args
+	dirs := []string{
+		"/opt/pxehub",
+		"/opt/pxehub/http",
+		"/opt/pxehub/tftp",
+	}
+
+	for _, dir := range dirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				fmt.Printf("Failed to create %s: %v\n", dir, err)
+				continue
+			}
+			fmt.Printf("Created %s\n", dir)
+		} else if err != nil {
+			fmt.Printf("Error checking %s: %v\n", dir, err)
+		} else {
+		}
+	}
+
+	conf, err := readConf("/opt/pxehub/pxehub.conf")
+	if err != nil {
+		fmt.Println("Error reading conf:", err)
+		return
+	}
+
+	dnsList := []string{}
+	if val, ok := conf["DNS_SERVERS"]; ok {
+		for _, ip := range strings.Split(val, ",") {
+			ip = strings.TrimSpace(ip)
+			if ip != "" {
+				dnsList = append(dnsList, ip)
+			}
+		}
+	}
 
 	database := db.OpenDB("/opt/pxehub/pxehub.db")
 
 	dhcpTftpServer := dnsmasq.DnsmasqServer{
-		Iface:       "virbr1",
-		RangeStart:  "192.168.100.10",
-		RangeEnd:    "192.168.100.254",
-		Mask:        "255.255.255.0",
-		Router:      "192.168.100.1",
-		Nameservers: []string{"1.1.1.1"},
+		Iface:       conf["INTERFACE"],
+		RangeStart:  conf["DHCP_RANGE_START"],
+		RangeEnd:    conf["DHCP_RANGE_END"],
+		Mask:        conf["DHCP_MASK"],
+		Router:      conf["DHCP_ROUTER"],
+		Nameservers: dnsList,
+		TFTPDir:     "/opt/pxehub/tftp",
 	}
 
 	httpServer := httpserver.HttpServer{
-		Iface:    "virbr1",
-		Port:     80,
-		Database: database,
+		Address:   conf["HTTP_BIND"],
+		Database:  database,
+		ExtrasDir: "/opt/pxehub/http",
 	}
 
 	if err := dhcpTftpServer.Start(); err != nil {

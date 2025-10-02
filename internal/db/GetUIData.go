@@ -70,7 +70,7 @@ func GetTotalHostCount(db *gorm.DB) (totalRequests int64, err error) {
 func GetActiveTaskCount(db *gorm.DB) (totalRequests int64, err error) {
 	ctx := context.Background()
 
-	totalRequests, err = gorm.G[Host](db).Where("task_id != ?", nil).Count(ctx, "ID")
+	totalRequests, err = gorm.G[Host](db).Where("task_id IS NOT NULL").Count(ctx, "ID")
 	if err != nil {
 		return 0, err
 	}
@@ -81,7 +81,7 @@ func GetActiveTaskCount(db *gorm.DB) (totalRequests int64, err error) {
 func GetHostsAsHTML(db *gorm.DB) (hostsHtml template.HTML, err error) {
 	ctx := context.Background()
 
-	hosts, err := gorm.G[Host](db).Find(ctx)
+	hosts, err := gorm.G[Host](db).Preload("Task", nil).Find(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -90,19 +90,19 @@ func GetHostsAsHTML(db *gorm.DB) (hostsHtml template.HTML, err error) {
 
 	for _, u := range hosts {
 		createdAt := u.CreatedAt.Format("2006-01-02 15:04:05")
-		if u.TaskID == nil {
+		if u.TaskID == 0 {
 			html += fmt.Sprintf(`<tr>
-				<td><a href="/hosts/%d">%s</a></td>
+				<td><a href="/hosts/edit/%d">%s</a></td>
 				<td class="text-secondary">%s</td>
 				<td class="text-secondary">%s</td>
 				<td class="text-secondary">N/A</td>
 			`, u.ID, u.Name, u.Mac, createdAt)
 		} else {
 			html += fmt.Sprintf(`<tr>
-				<td><a href="/hosts/%d">%s</a></td>
+				<td><a href="/hosts/edit/%d">%s</a></td>
 				<td class="text-secondary">%s</td>
 				<td class="text-secondary">%s</td>
-				<td class="text-secondary"><a href="/tasks/%d">%s</a></td>
+				<td class="text-secondary"><a href="/tasks/edit/%d">%s</a></td>
 			`, u.ID, u.Name, u.Mac, createdAt, u.Task.ID, u.Task.Name)
 		}
 	}
@@ -123,7 +123,7 @@ func GetTasksAsHTML(db *gorm.DB) (tasksHtml template.HTML, err error) {
 	for _, u := range tasks {
 		createdAt := u.CreatedAt.Format("2006-01-02 15:04:05")
 		html += fmt.Sprintf(`<tr>
-			<td><a href="/tasks/%d">%s</a></td>
+			<td><a href="/tasks/edit/%d">%s</a></td>
 			<td class="text-secondary">%s</td>
 		`, u.ID, u.Name, createdAt)
 	}

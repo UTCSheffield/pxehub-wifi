@@ -2,7 +2,7 @@
 <div class="row row-deck row-cards">
     <div class="col-12">
         <div class="card">
-            <div class="card-body flex-column m-5" style="height:45rem; overflow-y:auto;">
+            <div class="card-body flex-column m-5" style="max-height:45rem; overflow-y:auto;">
                 {{ if eq .Path "/tasks" }}
                 <div class="d-flex mb-3">
                     <div class="input-icon me-2" style="flex:1; width:90%">
@@ -35,7 +35,8 @@
                 </div>
                 {{ else }}
                 <div id="taskForm" class="d-flex flex-column" style="height:100%;">
-                    <div class="d-flex flex-column">
+                    <form action="/api/new/task" method="POST" class="d-flex flex-column flex-grow-1">
+                        <input type="hidden" name="redirect" value="true">
                         <div>
                             <h3>New Task</h3>
                         </div>
@@ -47,19 +48,21 @@
                                     class="form-control"
                                     name="taskName"
                                     placeholder="Task Name"
+                                    required
                                 />
                                 <label class="form-label">Script</label>
                                 <textarea
-                                class="form-control"
-                                name="taskScript"
-                                rows="10"
-                                placeholder="Paste your iPXE Script here..."
+                                    class="form-control"
+                                    name="taskScript"
+                                    rows="10"
+                                    placeholder="Paste your iPXE Script here..."
+                                    required
                                 ></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <a href="/tasks" class="btn btn-link link-secondary"> Cancel </a>
-                            <a href="/tasks/new" class="btn btn-primary ms-auto">
+                            <button type="submit" class="btn btn-primary ms-auto">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" 
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
@@ -68,9 +71,9 @@
                                     <path d="M5 12l14 0" />
                                 </svg>
                                 Create new task
-                            </a>
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
                 {{ end }}
             </div>

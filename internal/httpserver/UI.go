@@ -141,6 +141,87 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 		}
 
 	default:
+		if strings.HasPrefix(path, "tasks/edit/") {
+			id := strings.TrimPrefix(path, "tasks/edit/")
+
+			files := []string{
+				"base.html",
+				"tasks_edit.html",
+			}
+
+			tmpl, err := template.ParseFS(ui.Content, files...)
+			if err != nil {
+				if os.IsNotExist(err) {
+					http.NotFound(w, r)
+					return
+				}
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			task, err := db.GetTaskByID(id, h.Database)
+			if err != nil {
+				http.Error(w, "Task not found", http.StatusNotFound)
+				return
+			}
+
+			caser := cases.Title(language.English)
+			data := map[string]any{
+				"Title": caser.String("edit task"),
+				"Name":  "User",
+				"Path":  r.URL.Path,
+				"Task":  task,
+			}
+
+			if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		} else if strings.HasPrefix(path, "hosts/edit/") {
+			id := strings.TrimPrefix(path, "hosts/edit/")
+
+			files := []string{
+				"base.html",
+				"hosts_edit.html",
+			}
+
+			tmpl, err := template.ParseFS(ui.Content, files...)
+			if err != nil {
+				if os.IsNotExist(err) {
+					http.NotFound(w, r)
+					return
+				}
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			host, err := db.GetHostByID(id, h.Database)
+			if err != nil {
+				http.Error(w, "Host not found", http.StatusNotFound)
+				return
+			}
+
+			tasks, err := db.GetTasks(h.Database)
+			if err != nil {
+				http.Error(w, "Host not found", http.StatusNotFound)
+				return
+			}
+
+			caser := cases.Title(language.English)
+			data := map[string]any{
+				"Title": caser.String("edit task"),
+				"Name":  "User",
+				"Path":  r.URL.Path,
+				"Host":  host,
+				"Tasks": tasks,
+			}
+
+			if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+
 		http.NotFound(w, r)
 	}
 }
