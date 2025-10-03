@@ -76,5 +76,10 @@ func GetScriptByMAC(mac string, db *gorm.DB, log bool) (string, error) {
 
 	script := strings.ReplaceAll(task.Script, "{hostname}", host.Name)
 
+	var zero int = 0
+
+	if !host.PermanentTask {
+		EditHost(host.Name, host.Mac, &zero, false, host.ID, db)
+	}
 	return script, nil
 }

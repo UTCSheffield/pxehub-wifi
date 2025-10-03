@@ -37,6 +37,9 @@
                   <input type="hidden" name="taskID" id="taskID" value="{{ if .Host.TaskID }}{{ .Host.TaskID }}{{ end }}">
                   <div id="taskResults" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto;"></div>
                 </div>
+
+                <input type="checkbox" name="taskPerm" {{ if .Host.PermanentTask }} checked {{ end }}>
+                <label>Is Task Permanent?</label>
               </div>
               <div class="modal-footer">
                 <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
@@ -52,7 +55,7 @@
               <input type="hidden" name="redirect" value="true">
               <div class="mb-3">
                 <input type="checkbox" required>
-                <label for="confirmDelete">Confirm?</label>
+                <label>Confirm?</label>
               </div>
               <div class="modal-footer">
                 <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
@@ -109,8 +112,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
   input.addEventListener("input", function() {
     const query = input.value.toLowerCase();
-    showMatches(query.length === 0 ? tasks : tasks.filter(t => t.name.toLowerCase().includes(query)));
+    if (query.length === 0) {
+      hidden.value = 0; // set to 0 when input is empty
+      showMatches(tasks);
+    } else {
+      showMatches(tasks.filter(t => t.name.toLowerCase().includes(query)));
+    }
   });
+
 
   input.addEventListener("focus", () => showMatches(tasks));
 

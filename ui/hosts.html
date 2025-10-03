@@ -58,6 +58,9 @@
                                     <input type="hidden" name="taskID" id="taskID">
                                     <div id="taskResults" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto;"></div>
                                 </div>
+
+                                <input type="checkbox" name="taskPerm" {{ if .Host.PermanentTask }} checked {{ end }}>
+                                <label>Is Task Permanent?</label>
                             </div>
                         </div>
                         <div class="modal-footer">

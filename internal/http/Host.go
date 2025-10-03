@@ -30,7 +30,7 @@ func (h *HttpServer) NewHostiPXE(w http.ResponseWriter, r *http.Request, ps http
 
 	hostname := ps.ByName("hostname")
 
-	err := db.CreateHost(mac, hostname, 0, h.Database)
+	err := db.CreateHost(mac, hostname, 0, false, h.Database)
 	if err != nil {
 		script := strings.ReplaceAll(postRegisterScript, "#err ", "")
 		fmt.Fprint(w, script)
@@ -52,6 +52,8 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 	name := r.FormValue("hostName")
 	taskID := r.FormValue("taskID")
 	redirect := r.FormValue("redirect") == "true"
+	taskPerm := r.FormValue("taskPerm") == "on"
+
 	var taskIDPtr int
 	if taskID != "" {
 		idInt, err := strconv.Atoi(taskID)
@@ -62,7 +64,7 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 		taskIDPtr = idInt
 	}
 
-	if err := db.CreateHost(mac, name, taskIDPtr, h.Database); err != nil {
+	if err := db.CreateHost(mac, name, taskIDPtr, taskPerm, h.Database); err != nil {
 		http.Error(w, "Update failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -78,31 +80,32 @@ func (h *HttpServer) NewHost(w http.ResponseWriter, r *http.Request, ps httprout
 func (h *HttpServer) EditHost(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	id := ps.ByName("id")
 	name := r.FormValue("hostName")
-	mac := r.FormValue("taskMac")
+	mac := r.FormValue("hostMac")
 	taskID := r.FormValue("taskID")
 	redirect := r.FormValue("redirect") == "true"
+	taskPerm := r.FormValue("taskPerm") == "on"
 
-	var idPtr int
+	var idPtr uint
 	if id != "" {
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
 			http.Error(w, "Invalid taskID", http.StatusBadRequest)
 			return
 		}
-		idPtr = idInt
+		idPtr = uint(idInt)
 	}
 
-	var taskIDPtr int
+	var taskIDPtr *int
 	if taskID != "" {
 		idInt, err := strconv.Atoi(taskID)
 		if err != nil {
 			http.Error(w, "Invalid taskID", http.StatusBadRequest)
 			return
 		}
-		taskIDPtr = idInt
+		taskIDPtr = &idInt
 	}
 
-	if err := db.EditHost(name, mac, taskIDPtr, idPtr, h.Database); err != nil {
+	if err := db.EditHost(name, mac, taskIDPtr, taskPerm, idPtr, h.Database); err != nil {
 		http.Error(w, "Update failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

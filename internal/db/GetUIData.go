@@ -90,7 +90,7 @@ func GetHostsAsHTML(db *gorm.DB) (hostsHtml template.HTML, err error) {
 
 	for _, u := range hosts {
 		createdAt := u.CreatedAt.Format("2006-01-02 15:04:05")
-		if u.TaskID == 0 {
+		if u.TaskID == nil {
 			html += fmt.Sprintf(`<tr>
 				<td><a href="/hosts/edit/%d">%s</a></td>
 				<td class="text-secondary">%s</td>

@@ -10,13 +10,14 @@ import (
 
 type Host struct {
 	gorm.Model
-	Name   string
-	Mac    string
-	TaskID int
-	Task   Task
+	Name          string
+	Mac           string
+	TaskID        *int
+	Task          Task
+	PermanentTask bool
 }
 
-func CreateHost(mac, hostname string, taskID int, db *gorm.DB) error {
+func CreateHost(mac, hostname string, taskID int, taskPerm bool, db *gorm.DB) error {
 	macRegex := regexp.MustCompile(`^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$`)
 	if !macRegex.MatchString(mac) {
 		return errors.New("invalid mac address")
@@ -24,7 +25,7 @@ func CreateHost(mac, hostname string, taskID int, db *gorm.DB) error {
 
 	ctx := context.Background()
 
-	err := gorm.G[Host](db).Create(ctx, &Host{Name: hostname, Mac: mac, TaskID: taskID})
+	err := gorm.G[Host](db).Create(ctx, &Host{Name: hostname, Mac: mac, TaskID: &taskID, PermanentTask: taskPerm})
 	if err != nil {
 		return err
 	}
@@ -32,13 +33,23 @@ func CreateHost(mac, hostname string, taskID int, db *gorm.DB) error {
 	return nil
 }
 
-func EditHost(name, mac string, taskID, id int, db *gorm.DB) error {
-	ctx := context.Background()
+func EditHost(name, mac string, taskID *int, taskPerm bool, id uint, db *gorm.DB) error {
+	var host Host
 
-	_, err := gorm.G[Host](db).Where("id = ?", id).Updates(ctx, Host{Name: name, Mac: mac, TaskID: taskID})
-	if err != nil {
+	if err := db.First(&host, id).Error; err != nil {
 		return err
 	}
+
+	host.Name = name
+	host.Mac = mac
+	if *taskID == 0 {
+		host.TaskID = nil
+	} else {
+		host.TaskID = taskID
+	}
+	host.PermanentTask = taskPerm
+
+	db.Save(&host)
 
 	return nil
 }
