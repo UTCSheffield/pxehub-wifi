@@ -35,6 +35,17 @@ func EditTask(name, script, id string, db *gorm.DB) error {
 	return nil
 }
 
+func DeleteTask(id string, db *gorm.DB) error {
+	ctx := context.Background()
+
+	_, err := gorm.G[Task](db).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetTaskByID(id string, db *gorm.DB) (*Task, error) {
 	ctx := context.Background()
 

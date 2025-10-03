@@ -74,7 +74,7 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-	case "hosts":
+	case "hosts", "hosts/new":
 		files := []string{
 			"base.html",
 			"hosts.html",
@@ -95,12 +95,18 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
+		tasks, err := db.GetTasks(h.Database)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		caser := cases.Title(language.English)
 		data := map[string]any{
 			"Title": caser.String("hosts"),
 			"Name":  "User",
 			"Path":  r.URL.Path,
 			"Hosts": template.HTML(hostsHtml),
+			"Tasks": tasks,
 		}
 
 		if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
@@ -203,7 +209,7 @@ func (h *HttpServer) UI(w http.ResponseWriter, r *http.Request, _ httprouter.Par
 
 			tasks, err := db.GetTasks(h.Database)
 			if err != nil {
-				http.Error(w, "Host not found", http.StatusNotFound)
+				http.Error(w, "Tasks not found", http.StatusNotFound)
 				return
 			}
 

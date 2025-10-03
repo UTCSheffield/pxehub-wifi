@@ -11,7 +11,7 @@ import (
 
 	"pxehub/internal/db"
 	"pxehub/internal/dnsmasq"
-	"pxehub/internal/httpserver"
+	httpserver "pxehub/internal/http"
 )
 
 func readConf(path string) (map[string]string, error) {
@@ -48,19 +48,19 @@ func main() {
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, 0755); err != nil {
-				fmt.Printf("Failed to create %s: %v\n", dir, err)
+				log.Printf("Failed to create %s: %v\n", dir, err)
 				continue
 			}
-			fmt.Printf("Created %s\n", dir)
+			log.Printf("Created %s\n", dir)
 		} else if err != nil {
-			fmt.Printf("Error checking %s: %v\n", dir, err)
+			log.Printf("Error checking %s: %v\n", dir, err)
 		} else {
 		}
 	}
 
 	conf, err := readConf("/opt/pxehub/pxehub.conf")
 	if err != nil {
-		fmt.Println("Error reading conf:", err)
+		log.Println("Error reading conf:", err)
 		return
 	}
 

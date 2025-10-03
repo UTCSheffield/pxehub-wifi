@@ -1,35 +1,69 @@
 {{ define "content" }}
-<div class="d-flex flex-column">
-  <h3>Edit Host</h3>
-  <form action="/api/edit/host/{{ .Host.ID }}" method="POST" class="d-flex flex-column flex-grow-1 position-relative">
-    <input type="hidden" name="redirect" value="true">
+<div class="row row-deck row-cards">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+          <li class="nav-item">
+            <a href="#tabs-edit-host" class="nav-link active" data-bs-toggle="tab">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-edit"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" /><path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" /><path d="M16 5l3 3" /></svg>
+              Edit Host
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#tabs-delete-host" class="nav-link" data-bs-toggle="tab">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+              Delete Host
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="card-body flex-column m-5" style="max-height:45rem; overflow-y:auto;">
+        <div class="tab-content">
+          <div class="tab-pane active show" id="tabs-edit-host">
+            <h2>Edit Host</h2>
+            <form action="/api/edit/host/{{ .Host.ID }}" method="POST" class="d-flex flex-column flex-grow-1 position-relative">
+              <input type="hidden" name="redirect" value="true">
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control" name="hostName" value="{{ .Host.Name }}" required>
 
-    <div class="mb-3">
-      <label class="form-label">Name</label>
-      <input type="text" class="form-control" name="hostName" value="{{ .Host.Name }}" required>
+                <label class="form-label mt-3">MAC Address</label>
+                <input type="text" class="form-control" name="hostMac" value="{{ .Host.Mac }}" required>
 
-      <label class="form-label mt-3">MAC Address</label>
-      <input type="text" class="form-control" name="hostMac" value="{{ .Host.Mac }}" required>
+                <label class="form-label mt-3">Assigned Task</label>
+                <div class="dropdown w-100">
+                  <input type="text" id="taskSearch" class="form-control" placeholder="Search tasks..." value="{{ if .Host.Task }}{{ .Host.Task.Name }}{{ end }}">
+                  <input type="hidden" name="taskID" id="taskID" value="{{ if .Host.TaskID }}{{ .Host.TaskID }}{{ end }}">
+                  <div id="taskResults" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto;"></div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary ms-auto">Save changes</button>
+              </div>
+            </form>
+          </div>
 
-      <label class="form-label mt-3">Assigned Task</label>
-      <div class="dropdown w-100">
-        <input 
-          type="text" 
-          id="taskSearch" 
-          class="form-control" 
-          placeholder="Search tasks..." 
-          value="{{ if .Host.Task }}{{ .Host.Task.Name }}{{ end }}">
-        <input type="hidden" name="taskID" id="taskID" value="{{ if .Host.TaskID }}{{ .Host.TaskID }}{{ end }}">
-
-        <div id="taskResults" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto;"></div>
+          <div class="tab-pane" id="tabs-delete-host">
+            <h2>Delete Host</h2>
+            <p><strong>Host will be permanently deleted!</strong></p>
+            <form action="/api/delete/host/{{ .Host.ID }}" method="POST" class="d-flex flex-column flex-grow-1">
+              <input type="hidden" name="redirect" value="true">
+              <div class="mb-3">
+                <input type="checkbox" required>
+                <label for="confirmDelete">Confirm?</label>
+              </div>
+              <div class="modal-footer">
+                <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary ms-auto">Delete Host</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="modal-footer">
-      <a href="/hosts" class="btn btn-link link-secondary">Cancel</a>
-      <button type="submit" class="btn btn-primary ms-auto">Save changes</button>
-    </div>
-  </form>
+  </div>
 </div>
 
 <script>
@@ -51,23 +85,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function showMatches(matches) {
     results.innerHTML = "";
-
     if (currentTask && !matches.find(t => t.id === currentTask.id)) {
       matches = [currentTask, ...matches];
     }
-
     matches = matches.filter(t => t.name && t.name.trim() !== "");
-
     matches.slice(0, 20).forEach(t => {
       const item = document.createElement("a");
       item.href = "#";
       item.className = "dropdown-item";
       item.textContent = t.name;
-
-      if (hidden.value && t.id == hidden.value) {
-        item.classList.add("active");
-      }
-
+      if (hidden.value && t.id == hidden.value) item.classList.add("active");
       item.onclick = (e) => {
         e.preventDefault();
         input.value = t.name;
@@ -76,32 +103,19 @@ document.addEventListener("DOMContentLoaded", function() {
       };
       results.appendChild(item);
     });
-
-    if (matches.length) {
-      results.classList.add("show");
-    } else {
-      results.classList.remove("show");
-    }
+    if (matches.length) results.classList.add("show");
+    else results.classList.remove("show");
   }
 
   input.addEventListener("input", function() {
     const query = input.value.toLowerCase();
-    if (query.length === 0) {
-      showMatches(tasks);
-      return;
-    }
-    let matches = tasks.filter(t => t.name.toLowerCase().includes(query));
-    showMatches(matches);
+    showMatches(query.length === 0 ? tasks : tasks.filter(t => t.name.toLowerCase().includes(query)));
   });
 
-  input.addEventListener("focus", function() {
-    showMatches(tasks);
-  });
+  input.addEventListener("focus", () => showMatches(tasks));
 
   document.addEventListener("click", function(e) {
-    if (!results.contains(e.target) && e.target !== input) {
-      results.classList.remove("show");
-    }
+    if (!results.contains(e.target) && e.target !== input) results.classList.remove("show");
   });
 
   if (currentTask) {

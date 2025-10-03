@@ -42,20 +42,32 @@ func (h *HttpServer) Start() error {
 
 	router := httprouter.New()
 
+	// iPXE Client
 	router.GET("/api/boot/:mac", h.BootScript)
-	router.GET("/api/new/host/:mac/:hostname", h.NewHost)
+	router.GET("/api/new/host/:mac/:hostname", h.NewHostiPXE)
+
+	// New Object
 	router.POST("/api/new/host", h.NewHost)
-	router.POST("/api/edit/host/:id", h.EditHost)
 	router.POST("/api/new/task", h.NewTask)
+
+	// Update Object
+	router.POST("/api/edit/host/:id", h.EditHost)
 	router.POST("/api/edit/task/:id", h.EditTask)
 
+	// Delete Object
+	router.POST("/api/delete/host/:id", h.DeleteHost)
+	router.POST("/api/delete/task/:id", h.DeleteTask)
+
+	// UI
 	router.GET("/", h.UI)
 	router.GET("/hosts", h.UI)
+	router.GET("/hosts/new", h.UI)
 	router.GET("/hosts/edit/:id", h.UI)
 	router.GET("/tasks", h.UI)
 	router.GET("/tasks/new", h.UI)
 	router.GET("/tasks/edit/:id", h.UI)
 
+	// User Extras
 	router.ServeFiles("/extras/*filepath", http.Dir(h.ExtrasDir))
 
 	h.Server = &http.Server{

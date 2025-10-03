@@ -230,12 +230,5 @@ func (d *DnsmasqServer) Stop() error {
 		}
 	}
 
-	if d.TFTPDir != "" {
-		if err := os.RemoveAll(d.TFTPDir); err == nil {
-			log.Printf("Deleted TFTP dir: %s", d.TFTPDir)
-		}
-		d.TFTPDir = ""
-	}
-
 	return nil
 }
