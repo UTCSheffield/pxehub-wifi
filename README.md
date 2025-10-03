@@ -1,4 +1,5 @@
 # pxehub
+## This fork includes wifi key assignment to hosts
 Dynamic iPXE booting and host tracking.
 
 * Allows registering of hosts
