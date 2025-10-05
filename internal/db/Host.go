@@ -10,11 +10,15 @@ import (
 
 type Host struct {
 	gorm.Model
-	Name          string
-	Mac           string
+	Name string `gorm:"unique"`
+	Mac  string `gorm:"unique"`
+
 	TaskID        *int
 	Task          Task
 	PermanentTask bool
+
+	WifiKeyID *uint `gorm:"unique"`
+	WifiKey   WifiKey
 }
 
 func CreateHost(mac, hostname string, taskID int, taskPerm bool, db *gorm.DB) error {

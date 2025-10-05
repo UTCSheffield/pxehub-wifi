@@ -19,6 +19,7 @@ func OpenDB(dbPath string) *gorm.DB {
 	db.AutoMigrate(&Task{})
 	db.AutoMigrate(&Host{})
 	db.AutoMigrate(&Request{})
+	db.AutoMigrate(&WifiKey{})
 
 	return db
 }
