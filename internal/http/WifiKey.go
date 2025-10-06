@@ -22,11 +22,12 @@ func (h *HttpServer) GetWifiKey(w http.ResponseWriter, r *http.Request, ps httpr
 	host, err := db.GetHostByMAC(mac, h.Database)
 	if err != nil {
 		http.Error(w, "Fetching Host Failed: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	key, err := db.GetOrAssignWifiKeyToHost(host.ID, h.Database)
 	if err != nil {
-		http.Error(w, "Fetching Key Failed: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	fmt.Fprint(w, key.Key)

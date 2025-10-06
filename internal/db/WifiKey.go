@@ -58,10 +58,33 @@ var ErrNoWifiKeys = errors.New("no available wifi keys")
 
 func GetUnassignedWifiKey(db *gorm.DB) (*WifiKey, error) {
 	var key *WifiKey
-	db.
+	err := db.
 		Joins("LEFT JOIN hosts ON hosts.wifi_key_id = wifi_keys.id").
 		Where("hosts.id IS NULL").
-		First(&key)
+		First(&key).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrNoWifiKeys
+	} else if err != nil {
+		return nil, err
+	}
+
+	return key, nil
+}
+
+func AssignWifiKeyToHost(hostID int, db *gorm.DB) (*WifiKey, error) {
+	ctx := context.Background()
+
+	key, err := GetUnassignedWifiKey(db)
+	if err != nil {
+		return nil, err
+	} else if key.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	_, err = gorm.G[Host](db).Where("id = ?", hostID).Updates(ctx, Host{WifiKeyID: &key.ID})
+	if err != nil {
+		return nil, err
+	}
 
 	return key, nil
 }
