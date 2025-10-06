@@ -6,6 +6,7 @@ import (
 	"pxehub/internal/db"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -27,6 +28,13 @@ func (h *HttpServer) GetWifiKey(w http.ResponseWriter, r *http.Request, ps httpr
 
 	key, err := db.GetOrAssignWifiKeyToHost(host.ID, h.Database)
 	if err != nil {
+		http.Error(w, "Fetching Key Failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = db.LogRequest(true, time.Now(), host.Mac, h.Database)
+	if err != nil {
+		http.Error(w, "Logging Request Failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
