@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -26,6 +27,7 @@ func CreateHost(mac, hostname string, taskID int, taskPerm bool, db *gorm.DB) er
 	if !macRegex.MatchString(mac) {
 		return errors.New("invalid mac address")
 	}
+	mac = strings.ToLower(mac)
 
 	ctx := context.Background()
 
@@ -72,7 +74,18 @@ func DeleteHost(id string, db *gorm.DB) error {
 func GetHostByID(id string, db *gorm.DB) (*Host, error) {
 	ctx := context.Background()
 
-	host, err := gorm.G[Host](db).Where("id = ?", id).Preload("Task", nil).First(ctx)
+	host, err := gorm.G[Host](db).Where("id = ?", id).Preload("Task", nil).Preload("WifiKey", nil).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &host, nil
+}
+
+func GetHostByMAC(mac string, db *gorm.DB) (*Host, error) {
+	ctx := context.Background()
+
+	host, err := gorm.G[Host](db).Where("LOWER(mac) = LOWER(?)", mac).Preload("Task", nil).Preload("WifiKey", nil).First(ctx)
 	if err != nil {
 		return nil, err
 	}

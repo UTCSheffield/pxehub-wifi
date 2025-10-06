@@ -53,7 +53,8 @@ exit
 func GetScriptByMAC(mac string, db *gorm.DB, log bool) (string, error) {
 	ctx := context.Background()
 
-	host, err := gorm.G[Host](db).Where("mac = ?", mac).First(ctx)
+	mac = strings.ToLower(mac)
+	host, err := gorm.G[Host](db).Where("LOWER(mac) = LOWER(?)", mac).First(ctx)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		if log {
 			LogRequest(false, time.Now(), mac, db)

@@ -1,6 +1,6 @@
 {{ define "content" }}
 <div class="row row-deck row-cards">
-    <div class="col-4">
+    <div class="col-3">
         <div class="card">
             <div class="card-body flex-column m-5" style="height: 5rem">
                 <span class="status status-green">
@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div class="col-4">
+    <div class="col-3">
         <div class="card">
             <div class="card-body flex-column m-5" style="height: 5rem">
                 <span class="status status-yellow">
@@ -24,7 +24,19 @@
         </div>
     </div>
 
-    <div class="col-4">
+    <div class="col-3">
+        <div class="card">
+            <div class="card-body flex-column m-5" style="height: 5rem">
+                <span class="status status-teal">
+                    <span class="status-dot"></span>
+                    Available Wifi Keys
+                </span>
+                <h1>{{ .AvailableWifiKeys }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-3">
         <div class="card">
             <div class="card-body flex-column m-5" style="height: 5rem">
                 <span class="status status-blue">

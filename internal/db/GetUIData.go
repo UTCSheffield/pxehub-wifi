@@ -130,3 +130,52 @@ func GetTasksAsHTML(db *gorm.DB) (tasksHtml template.HTML, err error) {
 
 	return template.HTML(html), err
 }
+
+func GetWifiKeysAsHTML(db *gorm.DB) (wifiHtml template.HTML, err error) {
+	ctx := context.Background()
+
+	var usedKeys []*WifiKey
+	if err := db.
+		Joins("LEFT JOIN hosts ON hosts.wifi_key_id = wifi_keys.id").
+		Where("hosts.id IS NOT NULL").
+		Find(&usedKeys).Error; err != nil {
+		return "", err
+	}
+
+	usedMap := make(map[uint]bool, len(usedKeys))
+	for _, k := range usedKeys {
+		usedMap[k.ID] = true
+	}
+
+	keys, err := gorm.G[WifiKey](db).Find(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	var html string
+	for _, u := range keys {
+		createdAt := u.CreatedAt.Format("2006-01-02 15:04:05")
+		usedCol := ""
+		if usedMap[u.ID] {
+			usedCol = `<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-check"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>`
+		}
+
+		html += fmt.Sprintf(`<tr>
+			<td><a href="/wifikeys/edit/%d">%d</a></td>
+			<td class="text-secondary">%s</td>
+			<td class="text-secondary">%s</td>
+		</tr>`, u.ID, u.ID, createdAt, usedCol)
+	}
+
+	return template.HTML(html), nil
+}
+
+func GetUnassignedWifiKeyCount(db *gorm.DB) (int, error) {
+	var keys []*WifiKey
+	db.
+		Joins("LEFT JOIN hosts ON hosts.wifi_key_id = wifi_keys.id").
+		Where("hosts.id IS NULL").
+		Find(&keys)
+
+	return len(keys), nil
+}

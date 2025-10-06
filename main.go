@@ -76,8 +76,6 @@ func main() {
 
 	database := db.OpenDB("/opt/pxehub/pxehub.db")
 
-	log.Println(db.GetUnassignedWifiKey(database))
-
 	dhcpTftpServer := dnsmasq.DnsmasqServer{
 		Iface:       conf["INTERFACE"],
 		RangeStart:  conf["DHCP_RANGE_START"],

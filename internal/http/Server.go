@@ -45,18 +45,22 @@ func (h *HttpServer) Start() error {
 	// iPXE Client
 	router.GET("/api/boot/:mac", h.BootScript)
 	router.GET("/api/new/host/:mac/:hostname", h.NewHostiPXE)
+	router.GET("/api/get/wifikey/:mac", h.GetWifiKey)
 
 	// New Object
 	router.POST("/api/new/host", h.NewHost)
 	router.POST("/api/new/task", h.NewTask)
+	router.POST("/api/new/wifikey", h.NewWifiKey)
 
 	// Update Object
 	router.POST("/api/edit/host/:id", h.EditHost)
 	router.POST("/api/edit/task/:id", h.EditTask)
+	router.POST("/api/edit/wifikey/:id", h.EditWifiKey)
 
 	// Delete Object
 	router.POST("/api/delete/host/:id", h.DeleteHost)
 	router.POST("/api/delete/task/:id", h.DeleteTask)
+	router.POST("/api/delete/wifikey/:id", h.DeleteWifiKey)
 
 	// UI
 	router.GET("/", h.UI)
@@ -66,6 +70,9 @@ func (h *HttpServer) Start() error {
 	router.GET("/tasks", h.UI)
 	router.GET("/tasks/new", h.UI)
 	router.GET("/tasks/edit/:id", h.UI)
+	router.GET("/wifikeys", h.UI)
+	router.GET("/wifikeys/new", h.UI)
+	router.GET("/wifikeys/edit/:id", h.UI)
 
 	// User Extras
 	router.ServeFiles("/extras/*filepath", http.Dir(h.ExtrasDir))
